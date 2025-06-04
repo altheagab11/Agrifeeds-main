@@ -44,6 +44,41 @@ if (isset($_POST['add_product'])) {
   exit();
 }
 
+// Handle Edit Product
+if (isset($_POST['edit_product'])) {
+    $id = $_POST['productID'];
+    $name = $_POST['productName'];
+    $category = $_POST['category'];
+    $description = $_POST['description'];
+    $price = $_POST['price'];
+    $stock = $_POST['stock'];
+    $result = $con->updateProduct($id, $name, $category, $description, $price, $stock);
+
+    if ($result) {
+        $_SESSION['sweetAlertConfig'] = "
+        <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Product Updated',
+            text: 'Product updated successfully!',
+            confirmButtonText: 'OK'
+        });
+        </script>";
+    } else {
+        $_SESSION['sweetAlertConfig'] = "
+        <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: 'Failed to update product.',
+            confirmButtonText: 'OK'
+        });
+        </script>";
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
 $allProducts = $con->viewProducts();
 $totalProducts = count($allProducts);
 
@@ -204,25 +239,31 @@ foreach ($allProducts as $prod) {
                 <td><?php echo $rows['Prod_Stock']?></td>
                 <td><span class="badge <?php echo $statusClass; ?>"><?php echo $status; ?></span></td>
                 <td>
-                  <div class="btn-group" role="group">
-                    <form action="update_products.php" method="post">
-                    
-                    <input type="hidden" name="id" value="<?php echo $rows['ProductID']; ?>">  
-                    <button type="submit" class="btn btn-warning btn-sm">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-  
-                    </form>
-                    
-                    <form method="POST" class="mx-1">
-                      <input type="hidden" name="id" value="<?php echo $rows['ProductID']; ?>">
-                      <button type="submit" name="delete" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">
-                        <i class="bi bi-x-square"></i>
-                      </button>
-                    </form>
-        </div>
- 
-                </td>
+  <div class="btn-group" role="group">
+    <!-- EDIT BUTTON -->
+    <button 
+        type="button" 
+        class="btn btn-warning btn-sm editProductBtn"
+        data-id="<?php echo $rows['ProductID']; ?>"
+        data-name="<?php echo htmlspecialchars($rows['Prod_Name']); ?>"
+        data-category="<?php echo htmlspecialchars($rows['Prod_Cat']); ?>"
+        data-description="<?php echo htmlspecialchars($rows['Prod_Desc']); ?>"
+        data-price="<?php echo $rows['Prod_Price']; ?>"
+        data-stock="<?php echo $rows['Prod_Stock']; ?>"
+        data-bs-toggle="modal" 
+        data-bs-target="#editProductModal"
+    >
+      <i class="bi bi-pencil-square"></i>
+    </button>
+    <!-- DELETE BUTTON -->
+    <form method="POST" class="mx-1" style="display:inline;">
+      <input type="hidden" name="id" value="<?php echo $rows['ProductID']; ?>">
+      <button type="submit" name="delete" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">
+        <i class="bi bi-x-square"></i>
+      </button>
+    </form>
+  </div>
+</td>
               </tr>
 
               <?php
@@ -283,12 +324,78 @@ foreach ($allProducts as $prod) {
         </div>
     </div>
 
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editProductForm" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="edit_product" value="1">
+              <input type="hidden" name="productID" id="editProductID">
+              <div class="mb-3">
+                <label for="editProductName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="editProductName" name="productName" required>
+              </div>
+              <div class="mb-3">
+                <label for="editCategory" class="form-label">Category</label>
+                <select class="form-select" id="editCategory" name="category" required>
+                  <option value="">Select Category</option>
+                  <option value="feed">Animal Feed</option>
+                  <option value="supplements">Supplements</option>
+                  <option value="equipment">Equipment</option>
+                  <option value="accessories">Accessories</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="editDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editPrice" class="form-label">Price</label>
+                <div class="input-group">
+                  <span class="input-group-text">₱</span>
+                  <input type="number" class="form-control" id="editPrice" name="price" min="0" step="0.01" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editStock" class="form-label">Stock</label>
+                <input type="number" class="form-control" id="editStock" name="stock" min="0" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Product</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
+
+    <script>
+    // Fill Edit Modal with product data
+    document.querySelectorAll('.editProductBtn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.getElementById('editProductID').value = this.dataset.id;
+            document.getElementById('editProductName').value = this.dataset.name;
+            document.getElementById('editCategory').value = this.dataset.category;
+            document.getElementById('editDescription').value = this.dataset.description;
+            document.getElementById('editPrice').value = this.dataset.price;
+            document.getElementById('editStocks').value = this.dataset.stock;
+        });
+    });
+    </script>
+    
     <?php echo $sweetAlertConfig; ?>
 
 </body>

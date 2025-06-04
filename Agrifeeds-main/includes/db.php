@@ -41,6 +41,22 @@ class database{
 
     }
 
+       function updateProduct($name, $category, $description, $price, $stock, $id){
+    try    {
+        $con = $this->opencon();
+        $con->beginTransaction();
+        $query = $con->prepare("UPDATE products SET Prod_Name = ?, Prod_Cat = ?, Prod_Desc = ?, Prod_Price = ? , Prod_Stock = ? WHERE ProductID = ? ");
+        $query->execute([$name, $category, $description, $price, $stock, $id]);
+        $con->commit();
+        return true;
+
+    } catch (PDOException $e) {
+       
+         $con->rollBack();
+        return false; 
+    }
+    }
+
     
 
 }
