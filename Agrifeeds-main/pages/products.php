@@ -24,7 +24,7 @@ foreach ($allProducts as $prod) {
 }
 
 
-if (isset($_POST['add_products'])) {
+if (isset($_POST['add_product'])) {
 
   $productName = $_POST['productName'];
   $category = $_POST['category'];
@@ -33,27 +33,21 @@ if (isset($_POST['add_products'])) {
   $stock = $_POST['stock'];
   $productID = $con->addProduct($productName, $category, $description, $price, $stock);
 
-
   if ($productID) {
-
     $sweetAlertConfig = "
     <script>
-    
     Swal.fire({
         icon: 'success',
-        title: 'Book Has Been Added Successfully',
-        text: 'A new book has been added to the library!',
-        confirmationButtontext: 'Continue'
+        title: 'Product Added Successfully',
+        text: 'A new product has been added!',
+        confirmButtonText: 'Continue'
      }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = 'admin_homepage.php'
+            window.location.href = window.location.href;
         }
-            });
-
+    });
     </script>";
-
   } else {
-
     $sweetAlertConfig = "<script>
             Swal.fire({
                 icon: 'error',
@@ -61,9 +55,7 @@ if (isset($_POST['add_products'])) {
                 text: 'Please try again.'
             });
         </script>";
-
   }
-
 }
 
 ?>
