@@ -24,7 +24,7 @@ foreach ($allProducts as $prod) {
 }
 
 
-if (isset($_POST['add'])) {
+if (isset($_POST['add_products'])) {
 
   $productName = $_POST['productName'];
   $category = $_POST['category'];
@@ -249,7 +249,7 @@ if (isset($_POST['add'])) {
                         <input type="hidden" name="add_product" value="1">
                         <div class="mb-3">
                             <label for="productName" class="form-label">Product Name</label>
-                            <input type="text" class="form-control" id="productName" name="name" required>
+                            <input type="text" class="form-control" id="productName" name="productName" required>
                         </div>
                         <div class="mb-3">
                             <label for="category" class="form-label">Category</label>
@@ -278,7 +278,7 @@ if (isset($_POST['add'])) {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" name="add" class="btn btn-primary">Save Product</button>
+                            <button type="submit" name="add_products" class="btn btn-primary">Save Product</button>
                         </div>
                     </form>
                 </div>
@@ -286,6 +286,7 @@ if (isset($_POST['add'])) {
         </div>
     </div>
 
+    <?php echo $sweetAlertConfig; ?>
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert2 JS -->
