@@ -1,3 +1,65 @@
+<?php 
+session_start();
+
+require_once('../includes/db.php');
+$con = new database();
+$sweetAlertConfig = "";
+
+if (!isset($_SESSION['UserID'])) {
+    header('Location: index.php');
+    exit();
+}
+
+// Only allow admin (UserID = 1) to access this page
+if ((int)$_SESSION['UserID'] !== 1) {
+    // Redirect other users
+    header('Location: index.php');
+    exit();
+}
+
+if (isset($_POST['add'])) {
+
+  $productName = $_POST['productName'];
+  $category = $_POST['category'];
+  $description = $_POST['description'];
+  $price = $_POST['price'];
+  $stock = $_POST['stock'];
+  $productID = $con->addProduct($productName, $category, $description, $price, $stock);
+
+
+  if ($productID) {
+
+    $sweetAlertConfig = "
+    <script>
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'Book Has Been Added Successfully',
+        text: 'A new book has been added to the library!',
+        confirmationButtontext: 'Continue'
+     }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'admin_homepage.php'
+        }
+            });
+
+    </script>";
+
+  } else {
+
+    $sweetAlertConfig = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Something went wrong',
+                text: 'Please try again.'
+            });
+        </script>";
+
+  }
+
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,15 +83,6 @@
 
     <!-- Main Content -->
     <div class="main-content">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                Product updated successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                Error updating product. Please try again.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Products</h1>
@@ -120,7 +173,57 @@
                     </tr>
                 </thead>
                 <tbody>
-                    //insert
+                    <?php 
+            
+            $data = $con->viewProducts();
+            foreach ($data as $rows) {
+
+                if ($rows['Prod_Stock'] == 0) {
+                            $statusClass = 'bg-danger';
+                            $status = 'Out of Stock';
+                        } elseif ($rows['Prod_Stock'] > 0 && $rows['Prod_Stock'] <= 10) {
+                            $statusClass = 'bg-warning text-dark';
+                            $status = 'Low Stock';
+                        } else {
+                            $statusClass = 'bg-success';
+                            $status = 'In Stock';
+                        }
+
+            ?>
+
+              <tr>
+                <td><?php echo $rows['ProductID']?></td>
+                <td><?php echo $rows['Prod_Name']?></td>
+                <td><?php echo $rows['Prod_Cat']?></td>
+                <td><?php echo $rows['Prod_Desc']?></td>
+                <td>₱<?php echo number_format($rows['Prod_Price'], 2); ?></td>
+                <td><?php echo $rows['Prod_Stock']?></td>
+                <td><span class="badge <?php echo $statusClass; ?>"><?php echo $status; ?></span></td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <form action="update_products.php" method="post">
+                    
+                    <input type="hidden" name="id" value="<?php echo $rows['ProductID']; ?>">  
+                    <button type="submit" class="btn btn-warning btn-sm">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+  
+                    </form>
+                    
+                    <form method="POST" class="mx-1">
+                      <input type="hidden" name="id" value="<?php echo $rows['ProductID']; ?>">
+                      <button type="submit" name="delete" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">
+                        <i class="bi bi-x-square"></i>
+                      </button>
+                    </form>
+        </div>
+ 
+                </td>
+              </tr>
+
+              <?php
+            }
+            ?>
                 </tbody>
             </table>
         </div>
@@ -135,7 +238,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addProductForm" method="POST" onsubmit="return handleAdd(event)">
+                    <form id="addProductForm" method="POST">
                         <input type="hidden" name="add_product" value="1">
                         <div class="mb-3">
                             <label for="productName" class="form-label">Product Name</label>
@@ -168,7 +271,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Product</button>
+                            <button type="submit" name="add" class="btn btn-primary">Save Product</button>
                         </div>
                     </form>
                 </div>
