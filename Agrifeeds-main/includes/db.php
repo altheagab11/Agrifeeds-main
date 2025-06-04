@@ -59,6 +59,51 @@ class database{
     }
     }
 
+    function deleteProduct($id) {
+    try {
+        $con = $this->opencon();
+        $con->beginTransaction();
+        $stmt = $con->prepare("DELETE FROM products WHERE ProductID = ?");
+        $result = $stmt->execute([$id]);
+        $con->commit();
+        return $result;
+    } catch (PDOException $e) {
+        if (isset($con)) $con->rollBack();
+        return false;
+    }
+}
+
+function addCustomer($customerName, $contactInfo, $discountRate) {
+ 
+        $con = $this->opencon();
+       
+        try {
+            $con->beginTransaction();
+ 
+            $stmt = $con->prepare("INSERT INTO customer (Cust_Name, Cust_CoInfo, Cust_DiscRate) VALUES (?, ?, ?)");
+            $stmt->execute([$customerName, $contactInfo, $discountRate]);
+           
+            $custID = $con->lastInsertId();
+ 
+            $con->commit();
+ 
+            return $custID;
+ 
+        } catch (PDOException $e) {
+ 
+            $con->rollback();
+            return false;
+ 
+        }
+ 
+    }
+ 
+    function viewCustomers() {
+ 
+        $con = $this->opencon();
+        return $con->query("SELECT * FROM customers")->fetchAll();
+ 
+    }
     
 
 }

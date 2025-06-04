@@ -79,6 +79,35 @@ if (isset($_POST['edit_product'])) {
     exit();
 }
 
+if (isset($_POST['delete']) && isset($_POST['id'])) {
+    $id = $_POST['id'];
+    $result = $con->deleteProduct($id);
+
+    if ($result) {
+        $_SESSION['sweetAlertConfig'] = "
+        <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Product Deleted',
+            text: 'Product deleted successfully!',
+            confirmButtonText: 'OK'
+        });
+        </script>";
+    } else {
+        $_SESSION['sweetAlertConfig'] = "
+        <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Delete Failed',
+            text: 'Failed to delete product.',
+            confirmButtonText: 'OK'
+        });
+        </script>";
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
 $allProducts = $con->viewProducts();
 $totalProducts = count($allProducts);
 
@@ -396,7 +425,75 @@ foreach ($allProducts as $prod) {
     });
     </script>
 
-    <?php echo $sweetAlertConfig; ?>
+    <script>
+       // Custom search and sort for products table
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('table.table');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const searchInput = document.getElementById('productSearch');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const stockFilter = document.getElementById('stockFilter');
+        let currentSort = { col: null, dir: 1 };
 
+        // SEARCH & FILTER
+        function filterRows() {
+            const search = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            const stock = stockFilter.value;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const name = cells[1].textContent.toLowerCase();
+                const cat = cells[2].textContent.toLowerCase();
+                const desc = cells[3].textContent.toLowerCase();
+                const stockVal = parseInt(cells[5].textContent);
+                let show = true;
+                if (search && !(name.includes(search) || cat.includes(search) || desc.includes(search))) {
+                    show = false;
+                }
+                if (category !== 'all' && cat !== category) {
+                    show = false;
+                }
+                if (stock !== 'all') {
+                    if (stock === 'in_stock' && !(stockVal > 10)) show = false;
+                    if (stock === 'low_stock' && !(stockVal > 0 && stockVal <= 10)) show = false;
+                    if (stock === 'out_of_stock' && stockVal !== 0) show = false;
+                }
+                row.style.display = show ? '' : 'none';
+            });
+        }
+        searchInput.addEventListener('input', filterRows);
+        categoryFilter.addEventListener('change', filterRows);
+        stockFilter.addEventListener('change', filterRows);
+
+        // SORTING
+        table.querySelectorAll('th').forEach((th, idx) => {
+            if (idx === 7) return; // Skip Actions column
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', function() {
+                let dir = 1;
+                if (currentSort.col === idx) dir = -currentSort.dir;
+                currentSort = { col: idx, dir };
+                rows.sort((a, b) => {
+                    let aText = a.children[idx].textContent.trim();
+                    let bText = b.children[idx].textContent.trim();
+                    // Numeric sort for price, stock, id
+                    if (idx === 0 || idx === 4 || idx === 5) {
+                        aText = parseFloat(aText.replace(/[^\d.\-]/g, ''));
+                        bText = parseFloat(bText.replace(/[^\d.\-]/g, ''));
+                        if (isNaN(aText)) aText = 0;
+                        if (isNaN(bText)) bText = 0;
+                        return dir * (aText - bText);
+                    }
+                    // Text sort
+                    return dir * aText.localeCompare(bText);
+                });
+                // Re-append sorted rows
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+    });
+    <?php echo $sweetAlertConfig; ?>
+</script>
 </body>
 </html> 

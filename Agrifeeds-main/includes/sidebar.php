@@ -18,6 +18,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?php echo $current_page === 'pricing_history.php' ? 'active' : ''; ?>" href="pricing_history.php">
+                    <i class="bi bi-clock-history me-2"></i> Pricing History
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?php echo $current_page === 'customers.php' ? 'active' : ''; ?>" href="customers.php">
                     <i class="bi bi-people me-2"></i> Customers
                 </a>

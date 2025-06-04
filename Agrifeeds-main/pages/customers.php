@@ -1,3 +1,51 @@
+<?php
+session_start();
+ 
+require_once('../includes/db.php');
+$con = new database();
+$sweetAlertConfig = "";
+ 
+// Get SweetAlert config from session after redirect
+if (isset($_SESSION['sweetAlertConfig'])) {
+    $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
+    unset($_SESSION['sweetAlertConfig']);
+}
+ 
+if (isset($_POST['add_product'])) {
+ 
+  $customerName = $_POST['customerName'];
+  $contactInfo = $_POST['contactInfo'];
+  $discountRate = $_POST['discountRate'];
+  $custID = $con->addCustomer($customerName, $contactInfo, $discountRate);
+ 
+  if ($custID) {
+    $_SESSION['sweetAlertConfig'] = "
+    <script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Customer Added Successfully',
+        text: 'A new customer has been added!',
+        confirmButtonText: 'Continue'
+     });
+    </script>";
+  } else {
+    $_SESSION['sweetAlertConfig'] = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Something went wrong',
+                text: 'Please try again.'
+            });
+        </script>";
+  }
+  // Redirect to avoid resubmission
+  header("Location: " . $_SERVER['PHP_SELF']);
+  exit();
+}
+ 
+$customers = $con->viewCustomers();
+ 
+?>
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +64,7 @@
 </head>
 <body>
     <?php include '../includes/sidebar.php'; ?>
-
+ 
     <!-- Main Content -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -25,7 +73,7 @@
                 <i class="bi bi-plus-lg"></i> Add Customer
             </button>
         </div>
-
+ 
         <!-- Customer Summary Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -48,7 +96,7 @@
                 <div class="card dashboard-card">
                     <div class="card-body">
                         <h5 class="card-title">Gold Members</h5>
-                        <p class="card-text"><?php echo count(array_filter($customers, function($c) { return $c['LP_MbspTier'] === 'Gold'; })); ?></p>
+                        <p class="card-text"><?php echo count(array_filter($customers, function($c) { return isset($c['LP_MbspTier']) && $c['LP_MbspTier'] === 'Gold'; })); ?></p>
                     </div>
                 </div>
             </div>
@@ -56,12 +104,12 @@
                 <div class="card dashboard-card">
                     <div class="card-body">
                         <h5 class="card-title">Silver Members</h5>
-                        <p class="card-text"><?php echo count(array_filter($customers, function($c) { return $c['LP_MbspTier'] === 'Silver'; })); ?></p>
+                        <p class="card-text"><?php echo count(array_filter($customers, function($c) { return isset($c['LP_MbspTier']) && $c['LP_MbspTier'] === 'Silver'; })); ?></p>
                     </div>
                 </div>
             </div>
         </div>
-
+ 
         <!-- Search and Filter -->
         <div class="row mb-4">
             <div class="col-md-4">
@@ -69,7 +117,7 @@
                     <span class="input-group-text">
                         <i class="bi bi-search"></i>
                     </span>
-                    <input type="text" class="form-control" id="customerSearch" 
+                    <input type="text" class="form-control" id="customerSearch"
                            placeholder="Search customers..." aria-label="Search customers">
                 </div>
             </div>
@@ -82,28 +130,61 @@
                 </select>
             </div>
         </div>
-
+ 
         <!-- Customers Table -->
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>
-                    <tr>
-                        <th>Customer ID</th>
-                        <th>Name</th>
-                        <th>Contact Info</th>
-                        <th>Loyalty Status</th>
-                        <th>Points Balance</th>
-                        <th>Discount Rate</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    /* Loop through customers and display each one */
-                </tbody>
+    <tr>
+        <th>Customer ID</th>
+        <th>Name</th>
+        <th>Contact Info</th>
+        <th>Loyalty Status</th>
+        <th>Discount Rate</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody>
+    <?php
+    foreach ($customers as $customer) {
+    ?>
+    <tr>
+        <td><?php echo $customer['CustomerID']?></td>
+        <td><?php echo $customer['Cust_Name']?></td>
+        <td><?php echo $customer['Cust_CoInfo']?></td>
+        <td>
+        <?php
+        $points = isset($customer['Cust_Points']) ? (int)$customer['Cust_Points'] : 0;
+        if ($points >= 1000) {
+            echo '<span class="badge bg-warning text-dark">Gold</span>';
+        } elseif ($points >= 500) {
+            echo '<span class="badge bg-secondary">Silver</span>';
+        } else {
+            echo '<span class="badge bg-light text-dark">None</span>';
+        }
+        ?>
+        </td>
+        <td><?php echo number_format($customer['Cust_DiscRate'], 2); ?></td>
+        <td>
+            <button class="btn btn-sm btn-info" onclick="viewCustomer(<?php echo $customer['CustomerID']; ?>)">
+                <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="editCustomer(<?php echo $customer['CustomerID']; ?>)">
+                <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-success" onclick="viewLoyaltyHistory(<?php echo $customer['CustomerID']; ?>)">
+                <i class="bi bi-star"></i>
+            </button>
+        </td>
+    </tr>
+    <?php
+    }
+    ?>
+            </tbody>
             </table>
         </div>
     </div>
-
+ 
     <!-- Add Customer Modal -->
     <div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -124,7 +205,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="discountRate" class="form-label">Discount Rate (%)</label>
-                            <input type="number" class="form-control" id="discountRate" name="Cust_DiscRate" step="0.01" min="0" max="100">
+                            <input type="number" class="form-control" id="discountRate" name="discountRate" step="0.01" min="0" max="100">
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
@@ -143,10 +224,10 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    
+   
 </body>
-</html> 
+</html>
