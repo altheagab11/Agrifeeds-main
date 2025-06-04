@@ -5,16 +5,22 @@ require_once('../includes/db.php');
 $con = new database();
 $sweetAlertConfig = "";
 
-if (!isset($_SESSION['UserID'])) {
-    header('Location: index.php');
-    exit();
-}
+$allProducts = $con->viewProducts();
+$totalProducts = count($allProducts);
 
-// Only allow admin (UserID = 1) to access this page
-if ((int)$_SESSION['UserID'] !== 1) {
-    // Redirect other users
-    header('Location: index.php');
-    exit();
+$lowStockItems = 0;
+$outOfStock = 0;
+$activeProducts = 0;
+
+foreach ($allProducts as $prod) {
+    if ($prod['Prod_Stock'] == 0) {
+        $outOfStock++;
+    } elseif ($prod['Prod_Stock'] > 0 && $prod['Prod_Stock'] <= 10) {
+        $lowStockItems++;
+        $activeProducts++;
+    } else {
+        $activeProducts++;
+    }
 }
 
 if (isset($_POST['add'])) {
@@ -79,7 +85,7 @@ if (isset($_POST['add'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <?php include '../includes/sidebar.php'; ?>
+    <?php include '../includes/sidebar.php';  ?>
 
     <!-- Main Content -->
     <div class="main-content">
