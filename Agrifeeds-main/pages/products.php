@@ -5,6 +5,45 @@ require_once('../includes/db.php');
 $con = new database();
 $sweetAlertConfig = "";
 
+// Get SweetAlert config from session after redirect
+if (isset($_SESSION['sweetAlertConfig'])) {
+    $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
+    unset($_SESSION['sweetAlertConfig']);
+}
+
+if (isset($_POST['add_product'])) {
+
+  $productName = $_POST['productName'];
+  $category = $_POST['category'];
+  $description = $_POST['description'];
+  $price = $_POST['price'];
+  $stock = $_POST['stock'];
+  $productID = $con->addProduct($productName, $category, $description, $price, $stock);
+
+  if ($productID) {
+    $_SESSION['sweetAlertConfig'] = "
+    <script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Product Added Successfully',
+        text: 'A new product has been added!',
+        confirmButtonText: 'Continue'
+     });
+    </script>";
+  } else {
+    $_SESSION['sweetAlertConfig'] = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Something went wrong',
+                text: 'Please try again.'
+            });
+        </script>";
+  }
+  // Redirect to avoid resubmission
+  header("Location: " . $_SERVER['PHP_SELF']);
+  exit();
+}
+
 $allProducts = $con->viewProducts();
 $totalProducts = count($allProducts);
 
@@ -23,40 +62,6 @@ foreach ($allProducts as $prod) {
     }
 }
 
-
-if (isset($_POST['add_product'])) {
-
-  $productName = $_POST['productName'];
-  $category = $_POST['category'];
-  $description = $_POST['description'];
-  $price = $_POST['price'];
-  $stock = $_POST['stock'];
-  $productID = $con->addProduct($productName, $category, $description, $price, $stock);
-
-  if ($productID) {
-    $sweetAlertConfig = "
-    <script>
-    Swal.fire({
-        icon: 'success',
-        title: 'Product Added Successfully',
-        text: 'A new product has been added!',
-        confirmButtonText: 'Continue'
-     }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = window.location.href;
-        }
-    });
-    </script>";
-  } else {
-    $sweetAlertConfig = "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Something went wrong',
-                text: 'Please try again.'
-            });
-        </script>";
-  }
-}
 
 ?>
 <!DOCTYPE html>
@@ -278,12 +283,13 @@ if (isset($_POST['add_product'])) {
         </div>
     </div>
 
-    <?php echo $sweetAlertConfig; ?>
+    
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
-    
+    <?php echo $sweetAlertConfig; ?>
+
 </body>
 </html> 
