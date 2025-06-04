@@ -23,6 +23,7 @@ foreach ($allProducts as $prod) {
     }
 }
 
+
 if (isset($_POST['add'])) {
 
   $productName = $_POST['productName'];
