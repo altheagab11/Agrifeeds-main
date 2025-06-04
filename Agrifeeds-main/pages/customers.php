@@ -11,10 +11,10 @@ if (isset($_SESSION['sweetAlertConfig'])) {
     unset($_SESSION['sweetAlertConfig']);
 }
  
-if (isset($_POST['add_product'])) {
+if (isset($_POST['add'])) {
  
-  $customerName = $_POST['customerName'];
-  $contactInfo = $_POST['contactInfo'];
+  $customerName = $_POST['Cust_Name'];
+  $contactInfo = $_POST['Cust_CoInfo'];
   $discountRate = $_POST['discountRate'];
   $custID = $con->addCustomer($customerName, $contactInfo, $discountRate);
  
@@ -219,12 +219,12 @@ $customers = $con->viewCustomers();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="addCustomerForm" class="btn btn-primary">Save Customer</button>
+                    <button type="submit" form="addCustomerForm" name="add" class="btn btn-primary">Save Customer</button>
                 </div>
             </div>
         </div>
     </div>
- 
+ <?php echo $sweetAlertConfig; ?>
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->

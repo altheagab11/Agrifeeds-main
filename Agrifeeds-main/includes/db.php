@@ -74,29 +74,30 @@ class database{
 }
 
 function addCustomer($customerName, $contactInfo, $discountRate) {
- 
-        $con = $this->opencon();
+
+    $con = $this->opencon();
+   
+    try {
+        $con->beginTransaction();
+
+        // Change 'customer' to 'customers' here
+        $stmt = $con->prepare("INSERT INTO customers (Cust_Name, Cust_CoInfo, Cust_DiscRate) VALUES (?, ?, ?)");
+        $stmt->execute([$customerName, $contactInfo, $discountRate]);
        
-        try {
-            $con->beginTransaction();
- 
-            $stmt = $con->prepare("INSERT INTO customer (Cust_Name, Cust_CoInfo, Cust_DiscRate) VALUES (?, ?, ?)");
-            $stmt->execute([$customerName, $contactInfo, $discountRate]);
-           
-            $custID = $con->lastInsertId();
- 
-            $con->commit();
- 
-            return $custID;
- 
-        } catch (PDOException $e) {
- 
-            $con->rollback();
-            return false;
- 
-        }
- 
+        $custID = $con->lastInsertId();
+
+        $con->commit();
+
+        return $custID;
+
+    } catch (PDOException $e) {
+
+        $con->rollback();
+        return false;
+
     }
+
+}
  
     function viewCustomers() {
  
