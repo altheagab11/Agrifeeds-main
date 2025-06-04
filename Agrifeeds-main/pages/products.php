@@ -52,7 +52,7 @@ if (isset($_POST['edit_product'])) {
     $description = $_POST['description'];
     $price = $_POST['price'];
     $stock = $_POST['stock'];
-    $result = $con->updateProduct($id, $name, $category, $description, $price, $stock);
+    $result = $con->updateProduct($name, $category, $description, $price, $stock, $id);
 
     if ($result) {
         $_SESSION['sweetAlertConfig'] = "
@@ -330,13 +330,12 @@ foreach ($allProducts as $prod) {
       <div class="modal-dialog">
         <div class="modal-content">
           <form id="editProductForm" method="POST">
+            <input type="hidden" name="edit_product" value="1">
             <div class="modal-header">
               <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <input type="hidden" name="edit_product" value="1">
-              <input type="hidden" name="productID" id="editProductID">
               <div class="mb-3">
                 <label for="editProductName" class="form-label">Product Name</label>
                 <input type="text" class="form-control" id="editProductName" name="productName" required>
@@ -368,6 +367,7 @@ foreach ($allProducts as $prod) {
               </div>
             </div>
             <div class="modal-footer">
+                <input type="hidden" name="productID" id="editProductID">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary">Update Product</button>
             </div>
@@ -391,11 +391,11 @@ foreach ($allProducts as $prod) {
             document.getElementById('editCategory').value = this.dataset.category;
             document.getElementById('editDescription').value = this.dataset.description;
             document.getElementById('editPrice').value = this.dataset.price;
-            document.getElementById('editStocks').value = this.dataset.stock;
+            document.getElementById('editStock').value = this.dataset.stock;
         });
     });
     </script>
-    
+
     <?php echo $sweetAlertConfig; ?>
 
 </body>

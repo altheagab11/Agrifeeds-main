@@ -41,6 +41,8 @@ class database{
 
     }
 
+
+    
        function updateProduct($name, $category, $description, $price, $stock, $id){
     try    {
         $con = $this->opencon();
