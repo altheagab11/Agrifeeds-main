@@ -165,7 +165,7 @@ $customers = $con->viewCustomers();
         }
         ?>
         </td>
-        <td><?php echo number_format($customer['Cust_DiscRate'], 2); ?></td>
+        <td><?php echo number_format($customer['Cust_DiscRate'], 0) . '%'; ?></td>
         <td>
             <button class="btn btn-sm btn-info" onclick="viewCustomer(<?php echo $customer['CustomerID']; ?>)">
                 <i class="bi bi-eye"></i>
