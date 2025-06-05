@@ -105,6 +105,8 @@ function addCustomer($customerName, $contactInfo, $discountRate) {
         return $con->query("SELECT * FROM customers")->fetchAll();
  
     }
+
+    
     
 
 }

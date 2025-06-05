@@ -57,6 +57,7 @@ $customers = $con->viewCustomers();
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Custom CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="../css/custom.css" rel="stylesheet">
     <link href="../css/sidebar.css" rel="stylesheet">
     <!-- Google Fonts: Poppins -->
@@ -224,10 +225,10 @@ $customers = $con->viewCustomers();
             </div>
         </div>
     </div>
- <?php echo $sweetAlertConfig; ?>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-   
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?php echo $sweetAlertConfig; ?>
 </body>
 </html>

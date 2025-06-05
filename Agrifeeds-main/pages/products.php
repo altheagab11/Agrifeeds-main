@@ -493,7 +493,7 @@ foreach ($allProducts as $prod) {
             });
         });
     });
-    <?php echo $sweetAlertConfig; ?>
 </script>
+<?php echo $sweetAlertConfig; ?>
 </body>
 </html> 
