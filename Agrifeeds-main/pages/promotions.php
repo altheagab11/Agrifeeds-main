@@ -11,17 +11,17 @@ if (isset($_SESSION['sweetAlertConfig'])) {
 }
 
 // Handle Add Promotion
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Prom_Code'])) {
-    $code = $_POST['Prom_Code'];
-    $desc = $_POST['Promo_Description'];
-    $amount = $_POST['Promo_DiscAmnt'];
-    $type = $_POST['Promo_DiscountType'];
-    $start = $_POST['Promo_StartDate'];
-    $end = $_POST['Promo_EndDate'];
-    $limit = $_POST['UsageLimit'];
-    $isActive = $_POST['Promo_IsActive'];
+if (isset($_POST['add'])) {
+    $promCode = $_POST['Prom_Code'];
+    $promoDescription = $_POST['Promo_Description'];
+    $promoDiscAmnt = $_POST['Promo_DiscAmnt'];
+    $promoDiscountType = $_POST['Promo_DiscountType'];
+    $promoStartDate = $_POST['Promo_StartDate'];
+    $promoEndDate = $_POST['Promo_EndDate'];
+    $usageLimit = $_POST['UsageLimit'];
+    $promoIsActive = $_POST['Promo_IsActive'];
 
-    $result = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
+    $result = $con->addPromotion($promCode, $promoDescription, $promoDiscAmnt, $promoDiscountType, $promoStartDate, $promoEndDate, $usageLimit, $promoIsActive);
 
     if ($result) {
         $_SESSION['sweetAlertConfig'] = "<script>
@@ -229,7 +229,7 @@ $allPromotions = $con->viewPromotions();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Promotion</button>
+                    <button type="submit" name="add" class="btn btn-primary">Save Promotion</button>
                 </div>
             </form>
         </div>
@@ -238,7 +238,8 @@ $allPromotions = $con->viewPromotions();
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?php echo $sweetAlertConfig; ?>
     
 </body>
 </html> 
