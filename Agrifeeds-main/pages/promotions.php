@@ -20,10 +20,11 @@ if (isset($_POST['AddPromotion'])) {
     $end = $_POST['Promo_EndDate'];
     $limit = $_POST['UsageLimit'];
     $isActive = $_POST['Promo_IsActive'];
+    $products = isset($_POST['Products']) ? implode(',', $_POST['Products']) : '';
 
-    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
+    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive, $products);
 
-    if ($PromID) {
+    if ($result) {
         $_SESSION['sweetAlertConfig'] = "<script>
             Swal.fire({
                 icon: 'success',
@@ -49,6 +50,7 @@ if (isset($_POST['AddPromotion'])) {
 $allPromotions = $con->viewPromotions();
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,10 +66,8 @@ $allPromotions = $con->viewPromotions();
     <link href="../css/sidebar.css" rel="stylesheet">
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <?php if (!empty($sweetAlertConfig)) echo $sweetAlertConfig; ?>
     <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main Content -->
@@ -105,7 +105,6 @@ $allPromotions = $con->viewPromotions();
                     <option value="Active">Active</option>
                     <option value="Scheduled">Scheduled</option>
                     <option value="Expired">Expired</option>
-                    <option value="Inactive">Inactive</option>
                 </select>
             </div>
         </div>
@@ -221,6 +220,15 @@ echo "<span class='badge $badge'>$status</span>";
                             <label for="promoDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="promoProducts" class="form-label">Products (Category)</label>
+                            <select class="form-select" id="promoProducts" name="Products[]" multiple required>
+                                <?php foreach ($productCategories as $cat): ?>
+                                    <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted">Hold Ctrl or Cmd to select multiple categories.</small>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="promoDiscAmnt" class="form-label">Discount Amount</label>
@@ -267,5 +275,8 @@ echo "<span class='badge $badge'>$status</span>";
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?php echo $sweetAlertConfig; ?>
+    
 </body>
-</html>
+</html> 
