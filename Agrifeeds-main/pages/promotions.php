@@ -140,7 +140,7 @@ $allPromotions = $con->viewPromotions();
                         <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
                         <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
                         <td>
-                            <?php
+<?php
 $now = strtotime(date('Y-m-d H:i:s'));
 $start = strtotime($promo['Promo_StartDate']);
 $end = strtotime($promo['Promo_EndDate']);
