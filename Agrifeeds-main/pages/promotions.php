@@ -108,7 +108,7 @@ $allPromotions = $con->viewPromotions();
             </div>
         </div>
 
-        <!-- Promotions Table '_'-->
+        <!-- Promotions Table '_' -->
 <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead>
