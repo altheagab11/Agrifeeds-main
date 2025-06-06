@@ -1,3 +1,55 @@
+<?php
+session_start();
+require_once('../includes/db.php');
+$con = new database();
+$sweetAlertConfig = "";
+
+// SweetAlert config from session
+if (isset($_SESSION['sweetAlertConfig'])) {
+    $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
+    unset($_SESSION['sweetAlertConfig']);
+}
+
+// Handle Add Promotion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Prom_Code'])) {
+    $code = $_POST['Prom_Code'];
+    $desc = $_POST['Promo_Description'];
+    $amount = $_POST['Promo_DiscAmnt'];
+    $type = $_POST['Promo_DiscountType'];
+    $start = $_POST['Promo_StartDate'];
+    $end = $_POST['Promo_EndDate'];
+    $limit = $_POST['UsageLimit'];
+    $isActive = $_POST['Promo_IsActive'];
+
+    $result = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
+
+    if ($result) {
+        $_SESSION['sweetAlertConfig'] = "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Promotion Added',
+                text: 'A new promotion has been added!',
+                confirmButtonText: 'Continue'
+            });
+        </script>";
+    } else {
+        $_SESSION['sweetAlertConfig'] = "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Something went wrong',
+                text: 'Please try again.'
+            });
+        </script>";
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+// Fetch all promotions
+$allPromotions = $con->viewPromotions();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,7 +126,50 @@
             </tr>
         </thead>
         <tbody id="promotionsTableBody">
-            <!-- Table content will be populated by PHP or JS -->
+            <?php if (!empty($allPromotions)): ?>
+            <?php foreach ($allPromotions as $promo): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
+                <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
+                <td>
+                    <?php
+        $today = date('Y-m-d');
+        $start = $promo['Promo_StartDate'];
+        $end = $promo['Promo_EndDate'];
+        $isActive = $promo['Promo_IsActive'];
+
+        if ($isActive) {
+            if ($today < $start) {
+                $status = 'Scheduled';
+                $badge = 'bg-info text-dark';
+            } elseif ($today > $end) {
+                $status = 'Expired';
+                $badge = 'bg-danger';
+            } else {
+                $status = 'Active';
+                $badge = 'bg-success';
+            }
+        } else {
+            $status = 'Inactive';
+            $badge = 'bg-secondary';
+        }
+        echo "<span class='badge $badge'>$status</span>";
+    ?>
+                </td>
+                <td>
+                    <!-- Actions: Edit/Delete can be added here -->
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
+    <?php endif; ?>
         </tbody>
     </table>
 </div>

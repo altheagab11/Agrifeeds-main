@@ -80,7 +80,7 @@ function addCustomer($customerName, $contactInfo, $discountRate) {
         try {
             $con->beginTransaction();
  
-            $stmt = $con->prepare("INSERT INTO customer (Cust_Name, Cust_CoInfo, Cust_DiscRate) VALUES (?, ?, ?)");
+            $stmt = $con->prepare("INSERT INTO customers (Cust_Name, Cust_CoInfo, Cust_DiscRate) VALUES (?, ?, ?)");
             $stmt->execute([$customerName, $contactInfo, $discountRate]);
            
             $custID = $con->lastInsertId();
@@ -104,6 +104,13 @@ function addCustomer($customerName, $contactInfo, $discountRate) {
         return $con->query("SELECT * FROM customers")->fetchAll();
  
     }
+
+    function viewPromotions() {
+    $con = $this->opencon();
+    $stmt = $con->prepare("SELECT * FROM promotions ORDER BY PromotionID");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 }
 ?>
