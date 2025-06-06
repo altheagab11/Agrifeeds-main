@@ -4,6 +4,9 @@ require_once('../includes/db.php');
 $con = new database();
 $sweetAlertConfig = "";
 
+// Fetch product categories for the select field
+$productCategories = $con->getProductCategories(); // You must implement this in db.php
+
 // SweetAlert config from session
 if (isset($_SESSION['sweetAlertConfig'])) {
     $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
@@ -20,8 +23,9 @@ if (isset($_POST['AddPromotion'])) {
     $end = $_POST['Promo_EndDate'];
     $limit = $_POST['UsageLimit'];
     $isActive = $_POST['Promo_IsActive'];
+    $products = isset($_POST['Products']) ? implode(',', $_POST['Products']) : '';
 
-    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
+    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive, $products);
 
     if ($PromID) {
         $_SESSION['sweetAlertConfig'] = "<script>
@@ -113,86 +117,94 @@ $allPromotions = $con->viewPromotions();
         <!-- Promotions Table -->
         <div class="table-responsive">
             <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Promotion ID</th>
-                        <th>Promotion Code</th>
-                        <th>Description</th>
-                        <th>Discount</th>
-                        <th>Discount Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Usage Limit</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="promotionsTableBody">
-                    <?php if (!empty($allPromotions)): ?>
-                    <?php foreach ($allPromotions as $promo): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
-                        <td>
-                            <?php
-    $now = strtotime(date('Y-m-d H:i:s'));
-    $start = strtotime($promo['Promo_StartDate']);
-    $end = strtotime($promo['Promo_EndDate']);
-    $isActive = $promo['Promo_IsActive'];
+<thead>
+    <tr>
+        <th>Promotion ID</th>
+        <th>Promotion Code</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Discount</th>
+        <th>Products</th>
+        <th>Discount Type</th>
+        <th>Usage Limit</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody id="promotionsTableBody">
+    <?php if (!empty($allPromotions)): ?>
+    <?php foreach ($allPromotions as $promo): ?>
+    <tr>
+        <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
+        <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
+        <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
+        <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
+        <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
+        <td>
+            <?php
+            if (isset($promo['Products'])) {
+                echo htmlspecialchars($promo['Products']);
+            } else {
+                echo '<span class="text-muted">N/A</span>';
+            }
+            ?>
+        </td>
+        <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
+        <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
+        <td>
+            <?php
+                $today = date('Y-m-d');
+                $start = $promo['Promo_StartDate'];
+                $end = $promo['Promo_EndDate'];
+                $isActive = $promo['Promo_IsActive'];
 
-    if ($isActive) {
-        if ($now < $start) {
-            $status = 'Scheduled';
-            $badge = 'bg-info text-dark';
-        } elseif ($now > $end) {
-            $status = 'Expired';
-            $badge = 'bg-danger';
-        } else {
-            $status = 'Active';
-            $badge = 'bg-success';
-        }
-    } else {
-        $status = 'Inactive';
-        $badge = 'bg-secondary';
-    }
-    echo "<span class='badge $badge'>$status</span>";
-?>
-                        </td>
-                        <td>
-                            <!-- View Description Modal Trigger -->
-                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewDescModal<?php echo $promo['PromotionID']; ?>">
-                                <i class="bi bi-eye"></i> View
-                            </button>
-                            <!-- View Description Modal -->
-                            <div class="modal fade" id="viewDescModal<?php echo $promo['PromotionID']; ?>" tabindex="-1" aria-labelledby="viewDescLabel<?php echo $promo['PromotionID']; ?>" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="viewDescLabel<?php echo $promo['PromotionID']; ?>">Promotion Description</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <?php echo nl2br(htmlspecialchars($promo['Promo_Description'])); ?>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
+                if ($isActive) {
+                    if ($today < $start) {
+                        $status = 'Scheduled';
+                        $badge = 'bg-info text-dark';
+                    } elseif ($today > $end) {
+                        $status = 'Expired';
+                        $badge = 'bg-danger';
+                    } else {
+                        $status = 'Active';
+                        $badge = 'bg-success';
+                    }
+                } else {
+                    $status = 'Inactive';
+                    $badge = 'bg-secondary';
+                }
+                echo "<span class='badge $badge'>$status</span>";
+            ?>
+        </td>
+        <td>
+            <!-- View Description Modal Trigger -->
+            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewDescModal<?php echo $promo['PromotionID']; ?>">
+                <i class="bi bi-eye"></i> View
+            </button>
+            <!-- View Description Modal -->
+            <div class="modal fade" id="viewDescModal<?php echo $promo['PromotionID']; ?>" tabindex="-1" aria-labelledby="viewDescLabel<?php echo $promo['PromotionID']; ?>" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewDescLabel<?php echo $promo['PromotionID']; ?>">Promotion Description</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <?php echo nl2br(htmlspecialchars($promo['Promo_Description'])); ?>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+    <?php else: ?>
+    <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
+    <?php endif; ?>
+</tbody>
             </table>
         </div>
     </div>
@@ -214,6 +226,15 @@ $allPromotions = $con->viewPromotions();
                         <div class="mb-3">
                             <label for="promoDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="promoProducts" class="form-label">Products (Category)</label>
+                            <select class="form-select" id="promoProducts" name="Products[]" multiple required>
+                                <?php foreach ($productCategories as $cat): ?>
+                                    <option value="<?php echo htmlspecialchars($cat); ?>"><?php echo htmlspecialchars($cat); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted">Hold Ctrl or Cmd to select multiple categories.</small>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
