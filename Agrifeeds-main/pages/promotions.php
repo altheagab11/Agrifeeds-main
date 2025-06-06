@@ -140,14 +140,14 @@ $allPromotions = $con->viewPromotions();
                         <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
                         <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
                         <td>
-<?php
-$now = strtotime(date('Y-m-d H:i:s'));
-$start = strtotime($promo['Promo_StartDate']);
-$end = strtotime($promo['Promo_EndDate']);
-$isActive = $promo['Promo_IsActive'];
+                            <?php
+                            $now = strtotime(date('Y-m-d H:i:s'));
+                            $start = strtotime($promo['Promo_StartDate']);
+                            $end = strtotime($promo['Promo_EndDate']);
+                            $isActive = $promo['Promo_IsActive'];
 
-if ($isActive) {
-    if ($now < $start) {
+                        if ($isActive) {
+                    if ($now < $start) {
         $status = 'Scheduled';
         $badge = 'bg-info text-dark';
     } elseif ($now > $end) {
