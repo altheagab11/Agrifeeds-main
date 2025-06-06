@@ -115,48 +115,40 @@ $allPromotions = $con->viewPromotions();
         </div>
 
         <!-- Promotions Table -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-<thead>
-    <tr>
-        <th>Promotion ID</th>
-        <th>Promotion Code</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Discount</th>
-        <th>Products</th>
-        <th>Discount Type</th>
-        <th>Usage Limit</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-<tbody id="promotionsTableBody">
-    <?php if (!empty($allPromotions)): ?>
-    <?php foreach ($allPromotions as $promo): ?>
-    <tr>
-        <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
-        <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
-        <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
-        <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
-        <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
-        <td>
-            <?php
-            if (isset($promo['Products'])) {
-                echo htmlspecialchars($promo['Products']);
-            } else {
-                echo '<span class="text-muted">N/A</span>';
-            }
-            ?>
-        </td>
-        <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
-        <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
-        <td>
-            <?php
-                $today = date('Y-m-d');
-                $start = $promo['Promo_StartDate'];
-                $end = $promo['Promo_EndDate'];
-                $isActive = $promo['Promo_IsActive'];
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Promotion ID</th>
+                <th>Promotion Code</th>
+                <th>Description</th>
+                <th>Discount</th>
+                <th>Discount Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Usage Limit</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="promotionsTableBody">
+            <?php if (!empty($allPromotions)): ?>
+            <?php foreach ($allPromotions as $promo): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
+                <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
+                <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
+                <td>
+                    <?php
+        $today = date('Y-m-d');
+        $start = $promo['Promo_StartDate'];
+        $end = $promo['Promo_EndDate'];
+        $isActive = $promo['Promo_IsActive'];
 
                 if ($isActive) {
                     if ($today < $start) {
