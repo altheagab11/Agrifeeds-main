@@ -11,7 +11,7 @@ if (isset($_SESSION['sweetAlertConfig'])) {
 }
 
 // Handle Add Promotion
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Prom_Code'])) {
+if (isset($_POST['AddPromotion'])) {
     $code = $_POST['Prom_Code'];
     $desc = $_POST['Promo_Description'];
     $amount = $_POST['Promo_DiscAmnt'];
@@ -21,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Prom_Code'])) {
     $limit = $_POST['UsageLimit'];
     $isActive = $_POST['Promo_IsActive'];
 
-    $result = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
+    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
 
-    if ($result) {
+    if ($PromID) {
         $_SESSION['sweetAlertConfig'] = "<script>
             Swal.fire({
                 icon: 'success',
@@ -49,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['Prom_Code'])) {
 $allPromotions = $con->viewPromotions();
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -65,8 +64,10 @@ $allPromotions = $con->viewPromotions();
     <link href="../css/sidebar.css" rel="stylesheet">
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
+    <?php if (!empty($sweetAlertConfig)) echo $sweetAlertConfig; ?>
     <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main Content -->
@@ -104,141 +105,161 @@ $allPromotions = $con->viewPromotions();
                     <option value="Active">Active</option>
                     <option value="Scheduled">Scheduled</option>
                     <option value="Expired">Expired</option>
+                    <option value="Inactive">Inactive</option>
                 </select>
             </div>
         </div>
 
         <!-- Promotions Table -->
-<div class="table-responsive">
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Promotion ID</th>
-                <th>Promotion Code</th>
-                <th>Description</th>
-                <th>Discount</th>
-                <th>Discount Type</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Usage Limit</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="promotionsTableBody">
-            <?php if (!empty($allPromotions)): ?>
-            <?php foreach ($allPromotions as $promo): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
-                <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
-                <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
-                <td>
-                    <?php
-        $today = date('Y-m-d');
-        $start = $promo['Promo_StartDate'];
-        $end = $promo['Promo_EndDate'];
-        $isActive = $promo['Promo_IsActive'];
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Promotion ID</th>
+                        <th>Promotion Code</th>
+                        <th>Description</th>
+                        <th>Discount</th>
+                        <th>Discount Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Usage Limit</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="promotionsTableBody">
+                    <?php if (!empty($allPromotions)): ?>
+                    <?php foreach ($allPromotions as $promo): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
+                        <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
+                        <td>
+                            <?php
+    $now = strtotime(date('Y-m-d H:i:s'));
+    $start = strtotime($promo['Promo_StartDate']);
+    $end = strtotime($promo['Promo_EndDate']);
+    $isActive = $promo['Promo_IsActive'];
 
-        if ($isActive) {
-            if ($today < $start) {
-                $status = 'Scheduled';
-                $badge = 'bg-info text-dark';
-            } elseif ($today > $end) {
-                $status = 'Expired';
-                $badge = 'bg-danger';
-            } else {
-                $status = 'Active';
-                $badge = 'bg-success';
-            }
+    if ($isActive) {
+        if ($now < $start) {
+            $status = 'Scheduled';
+            $badge = 'bg-info text-dark';
+        } elseif ($now > $end) {
+            $status = 'Expired';
+            $badge = 'bg-danger';
         } else {
-            $status = 'Inactive';
-            $badge = 'bg-secondary';
+            $status = 'Active';
+            $badge = 'bg-success';
         }
-        echo "<span class='badge $badge'>$status</span>";
-    ?>
-                </td>
-                <td>
-                    <!-- Actions: Edit/Delete can be added here -->
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
-    <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+    } else {
+        $status = 'Inactive';
+        $badge = 'bg-secondary';
+    }
+    echo "<span class='badge $badge'>$status</span>";
+?>
+                        </td>
+                        <td>
+                            <!-- View Description Modal Trigger -->
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewDescModal<?php echo $promo['PromotionID']; ?>">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <!-- View Description Modal -->
+                            <div class="modal fade" id="viewDescModal<?php echo $promo['PromotionID']; ?>" tabindex="-1" aria-labelledby="viewDescLabel<?php echo $promo['PromotionID']; ?>" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="viewDescLabel<?php echo $promo['PromotionID']; ?>">Promotion Description</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <?php echo nl2br(htmlspecialchars($promo['Promo_Description'])); ?>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php else: ?>
+                    <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<!-- Add Promotion Modal -->
-<div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="addPromotionForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addPromotionModalLabel">New Promotion</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="promCode" class="form-label">Promotion Code</label>
-                        <input type="text" class="form-control" id="promCode" name="Prom_Code" required>
+    <!-- Add Promotion Modal -->
+    <div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addPromotionForm" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addPromotionModalLabel">New Promotion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                        <label for="promoDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="promoDiscAmnt" class="form-label">Discount Amount</label>
-                            <input type="number" class="form-control" id="promoDiscAmnt" name="Promo_DiscAmnt" step="0.01" min="0" required>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="promCode" class="form-label">Promotion Code</label>
+                            <input type="text" class="form-control" id="promCode" name="Prom_Code" required>
                         </div>
-                        <div class="col-md-6">
-                            <label for="promoDiscountType" class="form-label">Discount Type</label>
-                            <select class="form-select" id="promoDiscountType" name="Promo_DiscountType" required>
-                                <option value="Percentage">Percentage</option>
-                                <option value="Fixed">Fixed Amount</option>
+                        <div class="mb-3">
+                            <label for="promoDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="promoDiscAmnt" class="form-label">Discount Amount</label>
+                                <input type="number" class="form-control" id="promoDiscAmnt" name="Promo_DiscAmnt" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="promoDiscountType" class="form-label">Discount Type</label>
+                                <select class="form-select" id="promoDiscountType" name="Promo_DiscountType" required>
+                                    <option value="Percentage">Percentage</option>
+                                    <option value="Fixed">Fixed Amount</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="promoStartDate" class="form-label">Start Date & Time</label>
+                                <input type="datetime-local" class="form-control" id="promoStartDate" name="Promo_StartDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="promoEndDate" class="form-label">End Date & Time</label>
+                                <input type="datetime-local" class="form-control" id="promoEndDate" name="Promo_EndDate" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="usageLimit" class="form-label">Usage Limit</label>
+                            <input type="number" class="form-control" id="usageLimit" name="UsageLimit" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="promoIsActive" class="form-label">Status</label>
+                            <select class="form-select" id="promoIsActive" name="Promo_IsActive" required>
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
                             </select>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="promoStartDate" class="form-label">Start Date</label>
-                            <input type="date" class="form-control" id="promoStartDate" name="Promo_StartDate" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="promoEndDate" class="form-label">End Date</label>
-                            <input type="date" class="form-control" id="promoEndDate" name="Promo_EndDate" required>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="AddPromotion" class="btn btn-primary">Save Promotion</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="usageLimit" class="form-label">Usage Limit</label>
-                        <input type="number" class="form-control" id="usageLimit" name="UsageLimit" min="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="promoIsActive" class="form-label">Status</label>
-                        <select class="form-select" id="promoIsActive" name="Promo_IsActive" required>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Promotion</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    
 </body>
-</html> 
+</html>
