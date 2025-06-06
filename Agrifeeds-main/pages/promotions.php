@@ -141,34 +141,34 @@ $allPromotions = $con->viewPromotions();
                         <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
                         <td>
                             <?php
-                               $now = strtotime(date('Y-m-d H:i:s'));
-                               $start = strtotime($promo['Promo_StartDate']);
-                               $end = strtotime($promo['Promo_EndDate']);
-                               $isActive = $promo['Promo_IsActive'];
+$now = strtotime(date('Y-m-d H:i:s'));
+$start = strtotime($promo['Promo_StartDate']);
+$end = strtotime($promo['Promo_EndDate']);
+$isActive = $promo['Promo_IsActive'];
 
-                               if ($isActive) {
-                                   if ($now < $start) {
-                                       $status = 'Scheduled';
-                                       $badge = 'bg-info text-dark';
-                                   } elseif ($now > $end) {
-                                       // Set to inactive in the database if expired
-                                       $status = 'Expired';
-                                       $badge = 'bg-danger';
-                                       // Update Promo_IsActive to 0 if not already
-                                       if ($promo['Promo_IsActive'] != 0) {
-                                           $con->opencon()->prepare("UPDATE promotions SET Promo_IsActive=0 WHERE PromotionID=?")->execute([$promo                               ['PromotionID']]);
-            $                               isActive = 0; // update local variable too
-                                       }
-                                   } else {
-                                       $status = 'Active';
-                                       $badge = 'bg-success';
-                                   }
-                               } else {
-                                   $status = 'Inactive';
-                                   $badge = 'bg-secondary';
-                               }
-                               echo "<span class='badge $badge'>$status</span>";
-                               ?>
+if ($isActive) {
+    if ($now < $start) {
+        $status = 'Scheduled';
+        $badge = 'bg-info text-dark';
+    } elseif ($now > $end) {
+        // Set to inactive in the database if expired
+        $status = 'Expired';
+        $badge = 'bg-danger';
+        // Update Promo_IsActive to 0 if not already
+        if ($promo['Promo_IsActive'] != 0) {
+            $con->opencon()->prepare("UPDATE promotions SET Promo_IsActive=0 WHERE PromotionID=?")->execute([$promo['PromotionID']]);
+            $isActive = 0; // update local variable too
+        }
+    } else {
+        $status = 'Active';
+        $badge = 'bg-success';
+    }
+} else {
+    $status = 'Inactive';
+    $badge = 'bg-secondary';
+}
+echo "<span class='badge $badge'>$status</span>";
+?>
                         </td>
                         <td>
                             <!-- View Description Modal Trigger -->
