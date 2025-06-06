@@ -10,7 +10,7 @@ if (isset($_SESSION['sweetAlertConfig'])) {
     $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
     unset($_SESSION['sweetAlertConfig']);
 }
- 
+
 if (isset($_POST['add'])) {
  
   $customerName = $_POST['Cust_Name'];
