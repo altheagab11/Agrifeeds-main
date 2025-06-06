@@ -12,6 +12,7 @@ if (isset($_SESSION['sweetAlertConfig'])) {
 }
 
 
+
 if (isset($_POST['add'])) {
  
   $customerName = $_POST['Cust_Name'];
