@@ -57,119 +57,89 @@
         </div>
 
         <!-- Promotions Table -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th>Promotion Name</th>
-                        <th>Type</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Discount</th>
-                        <th>Products</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="promotionsTableBody">
-                    <!-- Table content will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Promotion ID</th>
+                <th>Promotion Code</th>
+                <th>Description</th>
+                <th>Discount</th>
+                <th>Discount Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Usage Limit</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="promotionsTableBody">
+            <!-- Table content will be populated by PHP or JS -->
+        </tbody>
+    </table>
+</div>
 
-    <!-- Add Promotion Modal -->
-    <div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+<!-- Add Promotion Modal -->
+<div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addPromotionForm" method="POST">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addPromotionModalLabel">New Promotion</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addPromotionForm">
-                        <div class="mb-3">
-                            <label for="promotionName" class="form-label">Promotion Name</label>
-                            <input type="text" class="form-control" id="promotionName" required>
+                    <div class="mb-3">
+                        <label for="promCode" class="form-label">Promotion Code</label>
+                        <input type="text" class="form-control" id="promCode" name="Prom_Code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="promoDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="promoDiscAmnt" class="form-label">Discount Amount</label>
+                            <input type="number" class="form-control" id="promoDiscAmnt" name="Promo_DiscAmnt" step="0.01" min="0" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="promotionType" class="form-label">Promotion Type</label>
-                            <select class="form-select" id="promotionType" required>
-                                <option value="">Select Type</option>
-                                <option value="Discount">Discount</option>
-                                <option value="BOGO">Buy One Get One</option>
-                                <option value="Bundle">Bundle Deal</option>
-                                <option value="Clearance">Clearance</option>
-                            </select>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="startDate" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="startDate" 
-                                       min="<?php echo date('Y-m-d'); ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="endDate" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="endDate" 
-                                       min="<?php echo date('Y-m-d'); ?>" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="discountType" class="form-label">Discount Type</label>
-                            <select class="form-select" id="discountType" required>
+                        <div class="col-md-6">
+                            <label for="promoDiscountType" class="form-label">Discount Type</label>
+                            <select class="form-select" id="promoDiscountType" name="Promo_DiscountType" required>
                                 <option value="Percentage">Percentage</option>
                                 <option value="Fixed">Fixed Amount</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label for="discountValue" class="form-label">Discount Value</label>
-                            <div class="input-group">
-                                <span class="input-group-text" id="discountSymbol">%</span>
-                                <input type="number" class="form-control" id="discountValue"
-                                       step="0.01" min="0" required>
-                            </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="promoStartDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="promoStartDate" name="Promo_StartDate" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="minPurchase" class="form-label">Minimum Purchase Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">₱</span>
-                                <input type="number" class="form-control" id="minPurchase"
-                                       step="0.01" min="0" value="0">
-                            </div>
+                        <div class="col-md-6">
+                            <label for="promoEndDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="promoEndDate" name="Promo_EndDate" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="applicableProducts" class="form-label">Applicable Products</label>
-                            <select class="form-select" id="applicableProducts" multiple>
-                                <option value="1">Layer Feed</option>
-                                <option value="2">Broiler Feed</option>
-                                <option value="3">Pig Feed</option>
-                                <option value="4">Cattle Feed</option>
-                                <option value="5">Fish Feed</option>
-                            </select>
-                            <small class="text-muted">Leave empty to apply to all products</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="promotionDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="promotionDescription" 
-                                      rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="excludeDiscounts">
-                                <label class="form-check-label" for="excludeDiscounts">
-                                    Cannot be combined with other discounts
-                                </label>
-                            </div>
-                        </div>
-                    </form>
+                    </div>
+                    <div class="mb-3">
+                        <label for="usageLimit" class="form-label">Usage Limit</label>
+                        <input type="number" class="form-control" id="usageLimit" name="UsageLimit" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="promoIsActive" class="form-label">Status</label>
+                        <select class="form-select" id="promoIsActive" name="Promo_IsActive" required>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="savePromotionBtn">Save Promotion</button>
+                    <button type="submit" class="btn btn-primary">Save Promotion</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
