@@ -1,54 +1,3 @@
-<?php
-session_start();
-require_once('../includes/db.php');
-$con = new database();
-$sweetAlertConfig = "";
-
-// SweetAlert config from session
-if (isset($_SESSION['sweetAlertConfig'])) {
-    $sweetAlertConfig = $_SESSION['sweetAlertConfig'];
-    unset($_SESSION['sweetAlertConfig']);
-}
-
-// Handle Add Promotion
-if (isset($_POST['AddPromotion'])) {
-    $code = $_POST['Prom_Code'];
-    $desc = $_POST['Promo_Description'];
-    $amount = $_POST['Promo_DiscAmnt'];
-    $type = $_POST['Promo_DiscountType'];
-    $start = $_POST['Promo_StartDate'];
-    $end = $_POST['Promo_EndDate'];
-    $limit = $_POST['UsageLimit'];
-    $isActive = $_POST['Promo_IsActive'];
-
-    $PromID = $con->addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive);
-
-    if ($PromID) {
-        $_SESSION['sweetAlertConfig'] = "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Promotion Added',
-                text: 'A new promotion has been added!',
-                confirmButtonText: 'Continue'
-            });
-        </script>";
-    } else {
-        $_SESSION['sweetAlertConfig'] = "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Something went wrong',
-                text: 'Please try again.'
-            });
-        </script>";
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
-
-// Fetch all promotions
-$allPromotions = $con->viewPromotions();
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,89 +64,18 @@ $allPromotions = $con->viewPromotions();
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Promotion ID</th>
-                        <th>Promotion Code</th>
-                        <th>Description</th>
-                        <th>Discount</th>
-                        <th>Discount Type</th>
+                        <th>Promotion Name</th>
+                        <th>Type</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>Usage Limit</th>
+                        <th>Discount</th>
+                        <th>Products</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="promotionsTableBody">
-                    <?php if (!empty($allPromotions)): ?>
-                    <?php foreach ($allPromotions as $promo): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($promo['PromotionID']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Prom_Code']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_Description']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_DiscAmnt']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_DiscountType']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_StartDate']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['Promo_EndDate']); ?></td>
-                        <td><?php echo htmlspecialchars($promo['UsageLimit']); ?></td>
-                        <td>
-                            <?php
-$now = strtotime(date('Y-m-d H:i:s'));
-$start = strtotime($promo['Promo_StartDate']);
-$end = strtotime($promo['Promo_EndDate']);
-$isActive = $promo['Promo_IsActive'];
-
-if ($isActive) {
-    if ($now < $start) {
-        $status = 'Scheduled';
-        $badge = 'bg-info text-dark';
-    } elseif ($now > $end) {
-        // Set to inactive in the database if expired
-        $status = 'Expired';
-        $badge = 'bg-danger';
-        // Update Promo_IsActive to 0 if not already
-        if ($promo['Promo_IsActive'] != 0) {
-            $con->opencon()->prepare("UPDATE promotions SET Promo_IsActive=0 WHERE PromotionID=?")->execute([$promo['PromotionID']]);
-            $isActive = 0; // update local variable too
-        }
-    } else {
-        $status = 'Active';
-        $badge = 'bg-success';
-    }
-} else {
-    $status = 'Inactive';
-    $badge = 'bg-secondary';
-}
-echo "<span class='badge $badge'>$status</span>";
-?>
-                        </td>
-                        <td>
-                            <!-- View Description Modal Trigger -->
-                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#viewDescModal<?php echo $promo['PromotionID']; ?>">
-                                <i class="bi bi-eye"></i> View
-                            </button>
-                            <!-- View Description Modal -->
-                            <div class="modal fade" id="viewDescModal<?php echo $promo['PromotionID']; ?>" tabindex="-1" aria-labelledby="viewDescLabel<?php echo $promo['PromotionID']; ?>" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="viewDescLabel<?php echo $promo['PromotionID']; ?>">Promotion Description</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <?php echo nl2br(htmlspecialchars($promo['Promo_Description'])); ?>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr><td colspan="10" class="text-center">No promotions found.</td></tr>
-                    <?php endif; ?>
+                    <!-- Table content will be populated by JavaScript -->
                 </tbody>
             </table>
         </div>
@@ -207,19 +85,25 @@ echo "<span class='badge $badge'>$status</span>";
     <div class="modal fade" id="addPromotionModal" tabindex="-1" aria-labelledby="addPromotionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id="addPromotionForm" method="POST">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addPromotionModalLabel">New Promotion</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPromotionModalLabel">New Promotion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPromotionForm">
                         <div class="mb-3">
-                            <label for="promCode" class="form-label">Promotion Code</label>
-                            <input type="text" class="form-control" id="promCode" name="Prom_Code" required>
+                            <label for="promotionName" class="form-label">Promotion Name</label>
+                            <input type="text" class="form-control" id="promotionName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="promoDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="promoDescription" name="Promo_Description" rows="2" required></textarea>
+                            <label for="promotionType" class="form-label">Promotion Type</label>
+                            <select class="form-select" id="promotionType" required>
+                                <option value="">Select Type</option>
+                                <option value="Discount">Discount</option>
+                                <option value="BOGO">Buy One Get One</option>
+                                <option value="Bundle">Bundle Deal</option>
+                                <option value="Clearance">Clearance</option>
+                            </select>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">

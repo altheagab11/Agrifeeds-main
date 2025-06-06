@@ -105,29 +105,5 @@ function addCustomer($customerName, $contactInfo, $discountRate) {
  
     }
 
-    function viewPromotions() {
-    $con = $this->opencon();
-    $stmt = $con->prepare("SELECT * FROM promotions ORDER BY PromotionID");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-    function addPromotion($code, $desc, $amount, $type, $start, $end, $limit, $isActive) {
-    $con = $this->opencon();
-    try {
-        $con->beginTransaction();
-        $stmt = $con->prepare("INSERT INTO promotions 
-            (Prom_Code, Promo_Description, Promo_DiscAmnt, Promo_DiscountType, Promo_StartDate, Promo_EndDate, UsageLimit, Promo_IsActive) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$code, $desc, $amount, $type, $start, $end, $limit, $isActive]);
-        $promotionID = $con->lastInsertId();
-        $con->commit();
-        return $promotionID;
-    } catch (PDOException $e) {
-        if (isset($con)) $con->rollBack();
-        return false;
-    }
-}
-
 }
 ?>
