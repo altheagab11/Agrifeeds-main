@@ -41,6 +41,7 @@ if (isset($_POST['add'])) {
   header("Location: " . $_SERVER['PHP_SELF']);
   exit();
 }
+
  
 $customers = $con->viewCustomers();
  
