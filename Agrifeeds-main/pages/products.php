@@ -145,6 +145,7 @@ foreach ($allProducts as $prod) {
     <link href="../css/sidebar.css" rel="stylesheet">
     <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
     <?php include '../includes/sidebar.php';  ?>
@@ -494,6 +495,7 @@ foreach ($allProducts as $prod) {
         });
     });
 </script>
+ <script src="../bootstrap-5.3.3-dist/js/bootstrap.js"></script>
 <?php echo $sweetAlertConfig; ?>
 </body>
-</html> 
+</html>
